@@ -131,10 +131,13 @@
     </div>
 
     <script src="js/bootstrap.bundle.min.js"></script>
-
+<!--<script src="http://chat.areza.my.id:8000/socket.io/socket.io.js"></script>-->
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io();
+        // Memastikan socket mengikuti protokol domain (http/https)
+        const socket = io({
+            transports: ['websocket', 'polling'] 
+        });
         let myData = null, targetUser = null, typingTimer;
 
         // --- EMOJI PICKER LOGIC ---
