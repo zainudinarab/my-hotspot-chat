@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Hotspot Pro</title>
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="libs/fontawesome/css/all.min.css">
+    <style>
+        body { height: 100vh; display: flex; flex-direction: column; background: #f1f5f9; overflow: hidden; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+        /* Custom Utilities untuk kompatibilitas JS */
+        .hidden { display: none !important; }
+        .cursor-pointer { cursor: pointer; }
+        .grayscale { filter: grayscale(100%); }
+        .hover-bg-slate-50:hover { background-color: #f8fafc; }
+
+        #chat-window { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background: #e5ddd5; }
+        .bubble { padding: 8px 12px; border-radius: 12px; font-size: 14px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-wrap: break-word; }
+        .mine { background: #dcf8c6; align-self: flex-end; border-top-right-radius: 2px; }
+        .others { background: white; align-self: flex-start; border-top-left-radius: 2px; }
+        .unread-badge { background: #ef4444; color: white; font-size: 10px; min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        
+        /* Avatar & Status */
+        .avatar-sm { width: 40px; height: 40px; object-fit: cover; }
+        .avatar-lg { width: 48px; height: 48px; object-fit: cover; }
+        .status-dot { width: 12px; height: 12px; border: 2px solid white; border-radius: 50%; position: absolute; bottom: 0; right: 0; }
+
+        /* Input Area */
+        .input-area { padding: 12px; background: white; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; align-items: center; }
+        
+        /* Emoji Picker */
+        .emoji-container { position: relative; display: flex; align-items: center; }
+        #emoji-picker {
+            position: absolute; bottom: 60px; left: 0; background: white; border: 1px solid #ddd;
+            border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); display: none;
+            grid-template-columns: repeat(6, 1fr); padding: 10px; gap: 5px; z-index: 1000;
+            width: 220px; max-height: 200px; overflow-y: auto;
+        }
+        .emoji-item { cursor: pointer; font-size: 20px; padding: 5px; text-align: center; transition: transform 0.2s; }
+        .emoji-item:hover { transform: scale(1.3); background: #f0f0f0; border-radius: 8px; }
+
+        /* Bootstrap Overrides */
+        .rounded-4 { border-radius: 1rem !important; }
+        .form-control:focus { box-shadow: none; border-color: #ced4da; }
+    </style>
+</head>
+<body>
+
+    <header id="main-header" class="bg-primary text-white p-3 d-flex align-items-center justify-content-between shadow-sm hidden">
+        <div class="d-flex align-items-center gap-3">
+            <i id="back-btn" class="fas fa-arrow-left hidden cursor-pointer" onclick="toContacts()"></i>
+            <img id="my-avatar" src="" class="avatar-sm rounded-circle border border-2 border-white hidden">
+            <img id="h-img" src="" class="avatar-sm rounded-circle border border-2 border-white hidden">
+            <div>
+                <h1 id="h-title" class="fw-bold m-0 fs-6">Chat Hotspot</h1>
+                <small id="online-count" class="text-white-50 d-block" style="font-size: 10px;"></small>
+                <small id="h-status" class="text-white-50 d-block hidden" style="font-size: 10px;"></small>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="position-relative" id="menu-dots">
+                <i class="fas fa-ellipsis-v cursor-pointer p-2" onclick="toggleMenu()"></i>
+                <div id="dropdown" class="dropdown-menu position-absolute end-0 mt-2 shadow" style="z-index: 1050; min-width: 150px;">
+                    <button onclick="showAva()" class="dropdown-item p-2 d-flex align-items-center"><i class="fas fa-user-circle me-2"></i> Avatar</button>
+                    <button onclick="logout()" class="dropdown-item p-2 text-danger d-flex align-items-center"><i class="fas fa-sign-out-alt me-2"></i> Logout</button>
+                </div>
+            </div>
+            <i class="fas fa-times fs-5 cursor-pointer" onclick="closeParent()"></i>
+        </div>
+    </header>
+
+    <div id="auth-screen" class="flex-grow-1 d-flex flex-column align-items-center justify-content-center p-4 bg-white position-relative">
+        <button onclick="closeParent()" class="position-absolute top-0 end-0 m-3 btn btn-link text-secondary text-decoration-none">
+            <i class="fas fa-times fs-4"></i>
+        </button>
+
+        <div id="login-box" class="w-100" style="max-width: 320px;">
+            <h2 class="text-center text-primary fw-bold mb-4 text-uppercase">Login Chat</h2>
+            <input type="text" id="l-user" class="form-control form-control-lg bg-light border-0 rounded-4 mb-3" placeholder="Username">
+            <input type="password" id="l-pass" class="form-control form-control-lg bg-light border-0 rounded-4 mb-4" placeholder="Password">
+            <button onclick="login()" class="btn btn-primary btn-lg w-100 rounded-4 fw-bold shadow">MASUK</button>
+            <p class="text-center mt-4 small">Belum punya akun? <button onclick="toggleAuth(true)" class="btn btn-link p-0 fw-bold text-decoration-none">Daftar</button></p>
+        </div>
+
+        <div id="reg-box" class="w-100 hidden" style="max-width: 320px;">
+            <h2 class="text-center text-success fw-bold mb-4 text-uppercase">Daftar Akun</h2>
+            <input type="text" id="r-name" class="form-control form-control-lg bg-light border-0 rounded-4 mb-3" placeholder="Nama Tampilan">
+            <input type="text" id="r-user" class="form-control form-control-lg bg-light border-0 rounded-4 mb-3" placeholder="Username Login">
+            <input type="password" id="r-pass" class="form-control form-control-lg bg-light border-0 rounded-4 mb-4" placeholder="Password">
+            <button onclick="register()" class="btn btn-success btn-lg w-100 rounded-4 fw-bold shadow">DAFTAR SEKARANG</button>
+            <p class="text-center mt-4 small">Sudah ada akun? <button onclick="toggleAuth(false)" class="btn btn-link p-0 fw-bold text-decoration-none">Login</button></p>
+        </div>
+    </div>
+
+    <div id="contact-screen" class="hidden flex-grow-1 bg-white overflow-auto"></div>
+
+    <div id="chat-screen" class="hidden d-flex flex-column h-100 overflow-hidden">
+        <div id="chat-window"></div>
+        
+        <div class="input-area">
+            <div class="emoji-container">
+                <button onclick="toggleEmoji()" class="btn btn-link text-secondary p-1">
+                    <i class="far fa-smile fs-4"></i>
+                </button>
+                <div id="emoji-picker"></div>
+            </div>
+
+            <input type="text" id="m-input" 
+                   class="form-control rounded-pill bg-light border-0" 
+                   placeholder="Tulis pesan..." 
+                   oninput="isTyping()" 
+                   onkeypress="if(event.key==='Enter') send()">
+            
+            <button onclick="send()" 
+                    class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center shadow" 
+                    style="width: 44px; height: 44px;">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="ava-modal" class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 hidden d-flex align-items-center justify-content-center" style="z-index: 2000;">
+        <div class="bg-white p-4 rounded-4 d-flex flex-column align-items-center" style="width: 300px;">
+            <h5 class="fw-bold mb-3">Pilih Avatar</h5>
+            <div class="row row-cols-3 g-3 justify-content-center w-100" id="ava-grid"></div>
+            <button onclick="document.getElementById('ava-modal').classList.add('hidden')" class="btn btn-link text-secondary mt-3 text-decoration-none">Batal</button>
+        </div>
+    </div>
+
+    <script src="js/bootstrap.bundle.min.js"></script>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let myData = null, targetUser = null, typingTimer;
+
+        // --- EMOJI PICKER LOGIC ---
+        const emojis = ['😀', '😂', '😍', '🤔', '😎', '😭', '😡', '👍', '👎', '❤️', '🎉', '🔥', '💯', '🚀', '💡', '✅', '🙏', '✨'];
+        let emojiPickerInitialized = false;
+
+        function initEmojiPicker() {
+            const picker = document.getElementById('emoji-picker');
+            picker.innerHTML = ''; // Clear existing emojis
+            emojis.forEach(emoji => {
+                const emojiEl = document.createElement('span');
+                emojiEl.className = 'emoji-item';
+                emojiEl.innerText = emoji;
+                emojiEl.onclick = () => addEmoji(emoji);
+                picker.appendChild(emojiEl);
+            });
+            emojiPickerInitialized = true;
+        }
+
+        function toggleEmoji() {
+            if (!emojiPickerInitialized) {
+                initEmojiPicker();
+            }
+            const picker = document.getElementById('emoji-picker');
+            picker.style.display = picker.style.display === 'grid' ? 'none' : 'grid';
+        }
+
+        function addEmoji(emoji) {
+            const input = document.getElementById('m-input');
+            input.value += emoji;
+            input.focus();
+        }
+
+        // --- AUTO LOGIN SAAT REFRESH ---
+        window.onload = () => {
+            const savedData = localStorage.getItem('chatCreds');
+            if (savedData) {
+                const creds = JSON.parse(savedData);
+                socket.emit('login', {
+                    username: creds.u,
+                    password: creds.p
+                });
+            }
+        };
+
+        // AUTH LOGIC
+        function toggleAuth(reg) {
+            document.getElementById('login-box').classList.toggle('hidden', reg);
+            document.getElementById('reg-box').classList.toggle('hidden', !reg);
+        }
+
+        function register() {
+            socket.emit('register', {
+                displayName: document.getElementById('r-name').value,
+                username: document.getElementById('r-user').value,
+                password: document.getElementById('r-pass').value
+            });
+        }
+
+        function login() {
+            const u = document.getElementById('l-user').value;
+            const p = document.getElementById('l-pass').value;
+            socket.emit('login', { username: u, password: p });
+            // Simpan kredensial untuk auto-login
+            localStorage.setItem('chatCreds', JSON.stringify({u: u, p: p}));
+        }
+
+        socket.on('reg success', (m) => { alert(m); toggleAuth(false); });
+        socket.on('reg error', alert);
+        socket.on('login error', (m) => {
+            alert(m);
+            localStorage.removeItem('chatCreds'); // Hapus jika salah password
+        });
+
+        socket.on('login success', (u) => {
+            myData = u;
+            document.getElementById('my-avatar').src = myData.avatar;
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-header').classList.remove('hidden');
+            document.getElementById('contact-screen').classList.remove('hidden');
+            toContacts(); // Set initial view to contacts
+        });
+
+        // CONTACTS & STATUS
+        socket.on('update users', (users) => {
+            const list = document.getElementById('contact-screen');
+            const onlineUsers = users.filter(u => u.status === 'online').length;
+            const onlineCountEl = document.getElementById('online-count');
+            
+            if (onlineCountEl && !targetUser) {
+                onlineCountEl.innerText = `${onlineUsers} orang online`;
+            }
+
+            if(!myData) return;
+
+            // Find my own updated data first and update UI
+            const me = users.find(u => u.username === myData.username);
+            if (me) {
+                myData = me; // Update myData completely
+                document.getElementById('my-avatar').src = myData.avatar;
+                if (!targetUser) { // only update title if on contact screen
+                    document.getElementById('h-title').innerText = myData.display_name;
+                }
+            }
+
+            list.innerHTML = "";
+            users.forEach(u => {
+                if(u.username === myData.username) return; // Don't show myself in the list
+                const unread = u.unreadCounts.find(c => c.receiver === myData.username)?.count || 0;
+                list.innerHTML += `
+                    <div onclick="openChat('${u.username}', '${u.display_name}', '${u.avatar}')" class="d-flex align-items-center p-3 border-bottom hover-bg-slate-50 cursor-pointer">
+                        <div class="position-relative">
+                            <img src="${u.avatar}" class="avatar-lg rounded-circle ${u.status==='offline'?'grayscale':''}">
+                            <div class="status-dot ${u.status==='online'?'bg-success':'bg-secondary'}"></div>
+                        </div>
+                        <div class="ms-3 flex-grow-1">
+                            <div class="fw-bold text-dark small">${u.display_name}</div>
+                            <div class="small ${u.status==='online'?'text-success':'text-muted'}" style="font-size: 11px;">${u.status}</div>
+                        </div>
+                        ${unread > 0 ? `<div class="unread-badge">${unread}</div>` : ''}
+                    </div>`;
+            });
+        });
+
+        // CHAT LOGIC
+        function openChat(user, name, ava) {
+            targetUser = user;
+            document.getElementById('h-title').innerText = name;
+            document.getElementById('h-img').src = ava;
+            document.getElementById('h-img').classList.remove('hidden');
+            document.getElementById('my-avatar').classList.add('hidden');
+            document.getElementById('online-count').classList.add('hidden');
+            document.getElementById('h-status').classList.remove('hidden');
+            document.getElementById('back-btn').classList.remove('hidden');
+            document.getElementById('contact-screen').classList.add('hidden');
+            document.getElementById('chat-screen').classList.remove('hidden');
+            document.getElementById('menu-dots').classList.add('hidden');
+            socket.emit('get private history', user);
+        }
+
+        function toContacts() {
+            targetUser = null;
+            if (myData) {
+                document.getElementById('h-title').innerText = myData.display_name;
+            } else {
+                document.getElementById('h-title').innerText = "Chat Hotspot";
+            }
+            document.getElementById('h-status').innerText = "";
+            document.getElementById('h-status').classList.add('hidden');
+            document.getElementById('h-img').classList.add('hidden');
+            document.getElementById('my-avatar').classList.remove('hidden');
+            document.getElementById('online-count').classList.remove('hidden');
+            document.getElementById('back-btn').classList.add('hidden');
+            document.getElementById('chat-screen').classList.add('hidden');
+            document.getElementById('contact-screen').classList.remove('hidden');
+            document.getElementById('menu-dots').classList.remove('hidden');
+        }
+
+        function send() {
+            const inp = document.getElementById('m-input');
+            if(inp.value.trim() && targetUser) {
+                socket.emit('send private message', { receiver: targetUser, content: inp.value });
+                inp.value = '';
+            }
+        }
+
+        socket.on('new private message', (d) => {
+            if((d.sender === targetUser && d.receiver === myData.username) || (d.sender === myData.username && d.receiver === targetUser)) {
+                renderMsg(d);
+                if(d.sender === targetUser) socket.emit('get private history', targetUser);
+            }
+        });
+
+        socket.on('chat history', (logs) => {
+            document.getElementById('chat-window').innerHTML = "";
+            logs.forEach(renderMsg);
+        });
+
+        function renderMsg(d) {
+            const win = document.getElementById('chat-window');
+            if(!win) return;
+            const isMe = d.sender === myData.username;
+            win.innerHTML += `<div class="bubble ${isMe?'mine':'others'}">${d.content}</div>`;
+            win.scrollTop = win.scrollHeight;
+        }
+
+        // TYPING LOGIC
+        function isTyping() {
+            socket.emit('typing', { receiver: targetUser });
+        }
+        socket.on('is typing', (d) => {
+            if(d.sender === targetUser) {
+                document.getElementById('h-status').innerText = "sedang mengetik...";
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => { 
+                    const hStatus = document.getElementById('h-status');
+                    if(hStatus) hStatus.innerText = "online";
+                }, 2000);
+            }
+        });
+
+        // UTILS
+        function toggleMenu() { document.getElementById('dropdown').classList.toggle('show'); }
+        function logout() { 
+            localStorage.clear(); 
+            location.reload(); 
+        }
+        function closeParent() { window.parent.postMessage('closeChat', '*'); }
+        
+        function showAva() {
+            const grid = document.getElementById('ava-grid');
+            grid.innerHTML = Array.from({length: 14}, (_, i) => i + 1).map(i => `<div class="col"><img src="img/namanya${i}.jpeg" class="w-100 rounded-circle cursor-pointer border" onclick="updateAva('img/namanya${i}.jpeg')"></div>`).join('');
+            document.getElementById('ava-modal').classList.remove('hidden');
+            toggleMenu();
+        }
+        function updateAva(url) {
+            socket.emit('update avatar', url);
+            document.getElementById('ava-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
