@@ -45,32 +45,65 @@
         /* Bootstrap Overrides */
         .rounded-4 { border-radius: 1rem !important; }
         .form-control:focus { box-shadow: none; border-color: #ced4da; }
+        .toast {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+            border: none !important;
+        }
+        .toast-container {
+            z-index: 9999 !important; /* Pastikan selalu paling depan */
+        }
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .hover-text-white:hover { color: white !important; transition: 0.3s; }
+        #delete-chat-btn:hover {
+    color: #ff4d4d !important; /* Warna merah saat di hover */
+    transform: scale(1.1);
+    transition: all 0.2s;
+}
     </style>
 </head>
 <body>
-
+    <audio id="notif-sound" src="sounds/mixkit.wav" preload="auto"></audio>
     <header id="main-header" class="bg-primary text-white p-3 d-flex align-items-center justify-content-between shadow-sm hidden">
-        <div class="d-flex align-items-center gap-3">
-            <i id="back-btn" class="fas fa-arrow-left hidden cursor-pointer" onclick="toContacts()"></i>
-            <img id="my-avatar" src="" class="avatar-sm rounded-circle border border-2 border-white hidden">
-            <img id="h-img" src="" class="avatar-sm rounded-circle border border-2 border-white hidden">
-            <div>
-                <h1 id="h-title" class="fw-bold m-0 fs-6">Chat Hotspot</h1>
-                <small id="online-count" class="text-white-50 d-block" style="font-size: 10px;"></small>
-                <small id="h-status" class="text-white-50 d-block hidden" style="font-size: 10px;"></small>
+    <div class="d-flex align-items-center gap-3">
+        <i id="back-btn" class="fas fa-arrow-left hidden cursor-pointer" onclick="toContacts()"></i>
+        <img id="my-avatar" src="" class="avatar-sm rounded-circle border border-2 border-white hidden">
+        <img id="h-img" src="" class="avatar-sm rounded-circle border border-2 border-white hidden">
+        <div>
+            <h1 id="h-title" class="fw-bold m-0 fs-6">Chat Hotspot</h1>
+            <small id="online-count" class="text-white-50 d-block" style="font-size: 10px;"></small>
+            <small id="h-status" class="text-white-50 d-block hidden" style="font-size: 10px;"></small>
+        </div>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2">
+        <i id="delete-chat-btn" class="fas fa-trash-alt cursor-pointer p-2 hidden text-white-50" title="Hapus Riwayat Chat" onclick="confirmDeleteChat()"></i>
+
+        <div class="position-relative" id="menu-dots">
+            <i class="fas fa-ellipsis-v cursor-pointer p-2" onclick="toggleMenu()"></i>
+            <div id="dropdown" class="dropdown-menu position-absolute end-0 mt-2 shadow" style="z-index: 1050; min-width: 150px;">
+                <button onclick="showAva()" class="dropdown-item p-2 d-flex align-items-center">
+                    <i class="fas fa-user-circle me-2"></i> Avatar
+                </button>
+                <button onclick="document.getElementById('notif-sound').play()" class="dropdown-item p-2 d-flex align-items-center text-warning">
+                    <i class="fas fa-volume-up me-2"></i> Test Suara
+                </button>
+                <button onclick="logout()" class="dropdown-item p-2 text-danger d-flex align-items-center">
+                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                </button>
             </div>
         </div>
-        <div class="d-flex align-items-center gap-3">
-            <div class="position-relative" id="menu-dots">
-                <i class="fas fa-ellipsis-v cursor-pointer p-2" onclick="toggleMenu()"></i>
-                <div id="dropdown" class="dropdown-menu position-absolute end-0 mt-2 shadow" style="z-index: 1050; min-width: 150px;">
-                    <button onclick="showAva()" class="dropdown-item p-2 d-flex align-items-center"><i class="fas fa-user-circle me-2"></i> Avatar</button>
-                    <button onclick="logout()" class="dropdown-item p-2 text-danger d-flex align-items-center"><i class="fas fa-sign-out-alt me-2"></i> Logout</button>
-                </div>
-            </div>
-            <i class="fas fa-times fs-5 cursor-pointer" onclick="closeParent()"></i>
-        </div>
-    </header>
+        <i class="fas fa-times fs-5 cursor-pointer p-2" onclick="closeParent()"></i>
+    </div>
+</header>
 
     <div id="auth-screen" class="flex-grow-1 d-flex flex-column align-items-center justify-content-center p-4 bg-white position-relative">
         <button onclick="closeParent()" class="position-absolute top-0 end-0 m-3 btn btn-link text-secondary text-decoration-none">
@@ -81,7 +114,15 @@
             <h2 class="text-center text-primary fw-bold mb-4 text-uppercase">Login Chat</h2>
             <input type="text" id="l-user" class="form-control form-control-lg bg-light border-0 rounded-4 mb-3" placeholder="Username">
             <input type="password" id="l-pass" class="form-control form-control-lg bg-light border-0 rounded-4 mb-4" placeholder="Password">
+            <div class="text-end mb-4">
+                <button onclick="forgotPass()" class="btn btn-link p-0 small text-decoration-none fw-bold" style="font-size: 12px;">Lupa Password?</button>
+            </div>
             <button onclick="login()" class="btn btn-primary btn-lg w-100 rounded-4 fw-bold shadow">MASUK</button>
+            <div class="text-center mt-2">
+                <button onclick="document.getElementById('notif-sound').play()" class="btn btn-sm btn-outline-warning border-0">
+                    <i class="fas fa-volume-up"></i> Klik jika suara tidak muncul
+                </button>
+            </div>
             <p class="text-center mt-4 small">Belum punya akun? <button onclick="toggleAuth(true)" class="btn btn-link p-0 fw-bold text-decoration-none">Daftar</button></p>
         </div>
 
@@ -94,14 +135,28 @@
             <p class="text-center mt-4 small">Sudah ada akun? <button onclick="toggleAuth(false)" class="btn btn-link p-0 fw-bold text-decoration-none">Login</button></p>
         </div>
     </div>
+    <div id="search-container" class="p-2 bg-light border-bottom hidden">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text bg-white border-end-0 rounded-start-pill">
+                <i class="fas fa-search text-muted"></i>
+            </span>
+            <input type="text" id="contact-search" class="form-control border-start-0 rounded-end-pill" placeholder="Cari username atau nama..." oninput="filterContacts()">
+        </div>
+    </div>
 
     <div id="contact-screen" class="hidden flex-grow-1 bg-white overflow-auto"></div>
+   
 
     <div id="chat-screen" class="hidden d-flex flex-column h-100 overflow-hidden">
         <div id="chat-window"></div>
         
         <div class="input-area">
             <div class="emoji-container">
+                <input type="file" id="image-input" accept="image/*" class="hidden" onchange="handleImage(this)">
+        
+                <button onclick="document.getElementById('image-input').click()" class="btn btn-link text-secondary p-1">
+                    <i class="fas fa-paperclip fs-4"></i>
+                </button>
                 <button onclick="toggleEmoji()" class="btn btn-link text-secondary p-1">
                     <i class="far fa-smile fs-4"></i>
                 </button>
@@ -129,16 +184,28 @@
             <button onclick="document.getElementById('ava-modal').classList.add('hidden')" class="btn btn-link text-secondary mt-3 text-decoration-none">Batal</button>
         </div>
     </div>
-
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 3000;">
+    <div id="liveToast" class="toast align-items-center text-white border-0 rounded-4" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+        <div class="toast-body" id="toast-message">
+            </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    </div>
     <script src="js/bootstrap.bundle.min.js"></script>
 <!--<script src="http://chat.areza.my.id:8000/socket.io/socket.io.js"></script>-->
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // Tambahkan baris ini untuk mengambil parameter 'group' dari URL iframe
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentGroupId = urlParams.get('group') || 'global'; 
+        let myData = null, targetUser = null, typingTimer;
         // Memastikan socket mengikuti protokol domain (http/https)
         const socket = io({
             transports: ['websocket', 'polling'] 
         });
-        let myData = null, targetUser = null, typingTimer;
+        // let myData = null, targetUser = null, typingTimer;
 
         // --- EMOJI PICKER LOGIC ---
         const emojis = ['😀', '😂', '😍', '🤔', '😎', '😭', '😡', '👍', '👎', '❤️', '🎉', '🔥', '💯', '🚀', '💡', '✅', '🙏', '✨'];
@@ -178,7 +245,8 @@
                 const creds = JSON.parse(savedData);
                 socket.emit('login', {
                     username: creds.u,
-                    password: creds.p
+                    password: creds.p,
+                    groupId: currentGroupId // Tambahkan ini
                 });
             }
         };
@@ -193,27 +261,53 @@
             socket.emit('register', {
                 displayName: document.getElementById('r-name').value,
                 username: document.getElementById('r-user').value,
-                password: document.getElementById('r-pass').value
+                password: document.getElementById('r-pass').value,
+                groupId: currentGroupId // Tambahkan ini
             });
         }
 
         function login() {
             const u = document.getElementById('l-user').value;
             const p = document.getElementById('l-pass').value;
-            socket.emit('login', { username: u, password: p });
-            // Simpan kredensial untuk auto-login
+            
+            // Tambahkan currentGroupId di sini
+            socket.emit('login', { 
+                username: u, 
+                password: p, 
+                groupId: currentGroupId 
+            });
+            
             localStorage.setItem('chatCreds', JSON.stringify({u: u, p: p}));
         }
-
-        socket.on('reg success', (m) => { alert(m); toggleAuth(false); });
-        socket.on('reg error', alert);
-        socket.on('login error', (m) => {
-            alert(m);
-            localStorage.removeItem('chatCreds'); // Hapus jika salah password
+        socket.on('reg success', (m) => { 
+            showNotify(m, 'success'); // "Daftar Berhasil"
+            toggleAuth(false); 
         });
+
+        socket.on('reg error', (m) => {
+            showNotify(m, 'danger'); // "Gagal Daftar"
+        });
+        socket.on('login error', (m) => {
+            showNotify(m, 'danger');
+            const box = document.getElementById('login-box');
+            box.classList.add('shake');
+            setTimeout(() => box.classList.remove('shake'), 500); // Hapus class setelah animasi selesai
+        });
+
+        // socket.on('login error', (m) => {
+        //     showNotify(m, 'danger'); // "Password Salah / User Tidak Ada"
+        //     localStorage.removeItem('chatCreds');
+        // });
 
         socket.on('login success', (u) => {
             myData = u;
+            // --- PANCINGAN AUDIO AGAR DIIZINKAN BROWSER ---
+            const sound = document.getElementById('notif-sound');
+            sound.play().then(() => {
+                sound.pause();
+                sound.currentTime = 0;
+            }).catch(e => console.log("Menunggu interaksi user untuk audio"));
+            // ----------------------------------------------
             document.getElementById('my-avatar').src = myData.avatar;
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('main-header').classList.remove('hidden');
@@ -247,21 +341,25 @@
             users.forEach(u => {
                 if(u.username === myData.username) return; // Don't show myself in the list
                 const unread = u.unreadCounts.find(c => c.receiver === myData.username)?.count || 0;
-                list.innerHTML += `
-                    <div onclick="openChat('${u.username}', '${u.display_name}', '${u.avatar}')" class="d-flex align-items-center p-3 border-bottom hover-bg-slate-50 cursor-pointer">
-                        <div class="position-relative">
-                            <img src="${u.avatar}" class="avatar-lg rounded-circle ${u.status==='offline'?'grayscale':''}">
-                            <div class="status-dot ${u.status==='online'?'bg-success':'bg-secondary'}"></div>
-                        </div>
-                        <div class="ms-3 flex-grow-1">
-                            <div class="fw-bold text-dark small">${u.display_name}</div>
-                            <div class="small ${u.status==='online'?'text-success':'text-muted'}" style="font-size: 11px;">${u.status}</div>
-                        </div>
-                        ${unread > 0 ? `<div class="unread-badge">${unread}</div>` : ''}
-                    </div>`;
+                // Di dalam users.forEach pada socket.on('update users')
+list.innerHTML += `
+    <div onclick="openChat('${u.username}', '${u.display_name}', '${u.avatar}')" class="d-flex align-items-center p-3 border-bottom hover-bg-slate-50 cursor-pointer">
+        <div class="position-relative">
+            <img src="${u.avatar}" class="avatar-lg rounded-circle ${u.status==='offline'?'grayscale':''}">
+            <div class="status-dot ${u.status==='online'?'bg-success':'bg-secondary'}"></div>
+        </div>
+        <div class="ms-3 flex-grow-1">
+            <div class="fw-bold text-dark small">${u.display_name}</div>
+            <div class="small ${u.status==='online'?'text-success':'text-muted'}" style="font-size: 11px;">${u.status}</div>
+        </div>
+        <div id="badge-container-${u.username}">
+            ${unread > 0 ? `<div class="unread-badge">${unread}</div>` : ''}
+        </div>
+    </div>`;
             });
         });
 
+        // CHAT LOGIC
         // CHAT LOGIC
         function openChat(user, name, ava) {
             targetUser = user;
@@ -270,11 +368,19 @@
             document.getElementById('h-img').classList.remove('hidden');
             document.getElementById('my-avatar').classList.add('hidden');
             document.getElementById('online-count').classList.add('hidden');
-            document.getElementById('h-status').classList.remove('hidden');
+            document.getElementById('search-container').classList.add('hidden'); // Sembunyikan search saat chat
+            // Reset status saat buka chat baru
+            const hStatus = document.getElementById('h-status');
+            hStatus.innerText = "online"; 
+            hStatus.classList.remove('hidden');
+            document.getElementById('delete-chat-btn').classList.remove('hidden'); // MUNCULKAN SAMPAH
             document.getElementById('back-btn').classList.remove('hidden');
             document.getElementById('contact-screen').classList.add('hidden');
             document.getElementById('chat-screen').classList.remove('hidden');
             document.getElementById('menu-dots').classList.add('hidden');
+const container = document.getElementById(`badge-container-${user}`);
+    if (container) container.innerHTML = '';
+            // Beritahu server untuk ambil history pesan (Server akan memfilter berdasarkan Group ID kita secara otomatis)
             socket.emit('get private history', user);
         }
 
@@ -285,6 +391,7 @@
             } else {
                 document.getElementById('h-title').innerText = "Chat Hotspot";
             }
+            document.getElementById('delete-chat-btn').classList.add('hidden'); // SEMBUNYIKAN SAMPAH
             document.getElementById('h-status').innerText = "";
             document.getElementById('h-status').classList.add('hidden');
             document.getElementById('h-img').classList.add('hidden');
@@ -293,7 +400,10 @@
             document.getElementById('back-btn').classList.add('hidden');
             document.getElementById('chat-screen').classList.add('hidden');
             document.getElementById('contact-screen').classList.remove('hidden');
+            document.getElementById('search-container').classList.remove('hidden');
             document.getElementById('menu-dots').classList.remove('hidden');
+            // Reset isi search saat kembali ke kontak
+            document.getElementById('contact-search').value = '';
         }
 
         function send() {
@@ -304,13 +414,62 @@
             }
         }
 
+        // socket.on('new private message', (d) => {
+        //     // 1. Logika render pesan jika chat sedang terbuka (SUDAH ADA)
+        //     if((d.sender === targetUser && d.receiver === myData.username) || (d.sender === myData.username && d.receiver === targetUser)) {
+        //         renderMsg(d);
+        //         if(d.sender === targetUser) socket.emit('get private history', targetUser);
+        //     } 
+            
+        //     // 2. LOGIKA REAL-TIME BADGE (TAMBAHKAN INI)
+        //     else if (d.sender !== myData.username) {
+        //         const container = document.getElementById(`badge-container-${d.sender}`);
+        //         if (container) {
+        //             const badge = container.querySelector('.unread-badge');
+        //             if (badge) {
+        //                 // Jika badge sudah ada, tambah angkanya
+        //                 let currentCount = parseInt(badge.innerText);
+        //                 badge.innerText = currentCount + 1;
+        //             } else {
+        //                 // Jika belum ada badge, buat baru
+        //                 container.innerHTML = `<div class="unread-badge">1</div>`;
+        //             }
+        //         }
+        //     }
+        // });
         socket.on('new private message', (d) => {
-            if((d.sender === targetUser && d.receiver === myData.username) || (d.sender === myData.username && d.receiver === targetUser)) {
-                renderMsg(d);
-                if(d.sender === targetUser) socket.emit('get private history', targetUser);
+            const sound = document.getElementById('notif-sound');
+
+            if (d.sender !== myData.username) {
+                // Jika sedang tidak buka chat dengan si pengirim, atau sedang di daftar kontak
+                if (d.sender !== targetUser) {
+                    
+                    // MAIN KAN SUARA
+                    if (sound) {
+                        sound.pause(); // Hentikan jika sedang bunyi
+                        sound.currentTime = 0; // Reset ke awal
+                        sound.play().catch(e => console.error("Audio diblokir browser:", e));
+                    }
+                    
+                    // Update Badge
+                    const container = document.getElementById(`badge-container-${d.sender}`);
+                    if (container) {
+                        const badge = container.querySelector('.unread-badge');
+                        if (badge) {
+                            badge.innerText = parseInt(badge.innerText) + 1;
+                        } else {
+                            container.innerHTML = `<div class="unread-badge">1</div>`;
+                        }
+                    }
+                } else {
+                    // Jika sedang buka chatnya
+                    renderMsg(d);
+                    socket.emit('get private history', targetUser);
+                }
+            } else {
+                if (d.receiver === targetUser) renderMsg(d);
             }
         });
-
         socket.on('chat history', (logs) => {
             document.getElementById('chat-window').innerHTML = "";
             logs.forEach(renderMsg);
@@ -320,10 +479,26 @@
             const win = document.getElementById('chat-window');
             if(!win) return;
             const isMe = d.sender === myData.username;
+            // Cek apakah konten diawali dengan data:image (Base64)
+    const isImage = d.content.startsWith('data:image/');
+    
+    let htmlContent = '';
+    if (isImage) {
+        // Jika gambar, tampilkan tag img yang bisa diklik untuk zoom
+        htmlContent = `<img src="${d.content}" class="rounded-3 img-fluid cursor-pointer" 
+                        style="max-width: 200px; display: block;" 
+                        onclick="zoomImage('${d.content}')">`;
+    } else {
+        // Jika teks biasa
+        htmlContent = d.content;
+    }
             win.innerHTML += `<div class="bubble ${isMe?'mine':'others'}">${d.content}</div>`;
             win.scrollTop = win.scrollHeight;
         }
-
+function zoomImage(src) {
+    const newTab = window.open();
+    newTab.document.body.innerHTML = `<img src="${src}" style="width:100%; height:auto;">`;
+}
         // TYPING LOGIC
         function isTyping() {
             socket.emit('typing', { receiver: targetUser });
@@ -357,6 +532,139 @@
             socket.emit('update avatar', url);
             document.getElementById('ava-modal').classList.add('hidden');
         }
+        let allUsersCached = []; // Simpan data user untuk pencarian
+        socket.on('update users', (users) => {
+            allUsersCached = users; // Simpan ke cache global
+            renderUserList(users); // Panggil fungsi render terpisah
+        });
+
+        function filterContacts() {
+            const keyword = document.getElementById('contact-search').value.toLowerCase();
+            
+            if (keyword === '') {
+                renderUserList(allUsersCached); // Balik ke filter standar (Online + Unread)
+                return;
+            }
+
+            // Jika sedang mencari, tampilkan SEMUA yang cocok dengan nama/username
+            const searched = allUsersCached.filter(u => {
+                if (u.username === myData.username) return false;
+                return u.display_name.toLowerCase().includes(keyword) || 
+                    u.username.toLowerCase().includes(keyword);
+            });
+
+            renderUserList(searched, true); // True artinya kita sedang mode pencarian
+        }
+
+        function renderUserList(usersToRender, isSearching = false) {
+            const list = document.getElementById('contact-screen');
+            if (!myData) return;
+
+            // Filter Standar jika tidak sedang mencari: Hanya Online atau ada Unread
+            const finalDisplay = isSearching ? usersToRender : usersToRender.filter(u => {
+                if (u.username === myData.username) return false;
+                const isOnline = u.status === 'online';
+                const hasUnread = u.unreadCounts.some(c => c.receiver === myData.username && c.count > 0);
+                return isOnline || hasUnread;
+            });
+
+            list.innerHTML = "";
+            if (finalDisplay.length === 0) {
+                list.innerHTML = `<div class="p-5 text-center text-muted small">
+                    ${isSearching ? 'User tidak ditemukan' : 'Tidak ada teman online'}
+                </div>`;
+                return;
+            }
+
+            finalDisplay.forEach(u => {
+                const unread = u.unreadCounts.find(c => c.receiver === myData.username)?.count || 0;
+                list.innerHTML += `
+                    <div onclick="openChat('${u.username}', '${u.display_name}', '${u.avatar}')" class="d-flex align-items-center p-3 border-bottom hover-bg-slate-50 cursor-pointer">
+                        <div class="position-relative">
+                            <img src="${u.avatar}" class="avatar-lg rounded-circle ${u.status === 'offline' ? 'grayscale' : ''}">
+                            <div class="status-dot ${u.status === 'online' ? 'bg-success' : 'bg-secondary'}"></div>
+                        </div>
+                        <div class="ms-3 flex-grow-1">
+                            <div class="fw-bold text-dark small">${u.display_name}</div>
+                            <div class="small ${u.status === 'online' ? 'text-success' : 'text-muted'}" style="font-size: 11px;">
+                                ${u.status === 'online' ? 'Online' : 'Offline'}
+                            </div>
+                        </div>
+                        <div id="badge-container-${u.username}">
+                            ${unread > 0 ? `<div class="unread-badge">${unread}</div>` : ''}
+                        </div>
+                    </div>`;
+            });
+        }
+        function showNotify(message, type = 'success') {
+            const toastEl = document.getElementById('liveToast');
+            const toastMsg = document.getElementById('toast-message');
+            
+            // Atur warna berdasarkan tipe (success, danger, warning)
+            toastEl.classList.remove('bg-success', 'bg-danger', 'bg-warning');
+            toastEl.classList.add(`bg-${type}`);
+            
+            toastMsg.innerText = message;
+            
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }       
+      function forgotPass() {
+    const user = document.getElementById('l-user').value;
+    if (!user) {
+        showNotify("Isi username kamu dulu di kotak login!", "warning");
+        return;
+    }
+    
+    // Kirim sinyal ke server bahwa user ini minta bantuan
+    socket.emit('forgot password', { username: user });
+    showNotify("Permintaan reset password telah dikirim ke Admin.", "success");
+}   
+// Fungsi Konfirmasi Hapus
+function confirmDeleteChat() {
+    if (!targetUser) return;
+    
+    // Menggunakan modal confirm bawaan, tapi notifikasinya pakai showNotify
+    if (confirm(`Hapus semua chat dengan ${targetUser}?`)) {
+        socket.emit('delete history', { withUser: targetUser });
+    }
+    // Tutup menu jika terbuka
+    document.getElementById('dropdown').classList.remove('show');
+}
+
+// Tambahkan listener untuk respon server
+socket.on('history deleted', (data) => {
+    if (data.withUser === targetUser) {
+        document.getElementById('chat-window').innerHTML = "";
+        showNotify("Riwayat chat dikosongkan", "success");
+    }
+});      
+function handleImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // Validasi ukuran (contoh: max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+        showNotify("Ukuran gambar terlalu besar! Maksimal 2MB.", "warning");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const base64Image = e.target.result;
+        
+        // Kirim ke server
+        if (targetUser) {
+            socket.emit('send private message', { 
+                receiver: targetUser, 
+                content: base64Image,
+                type: 'image' // Beri tanda bahwa ini adalah gambar
+            });
+            input.value = ''; // Reset input file
+        }
+    };
+    reader.readAsDataURL(file);
+}                                   
     </script>
 </body>
 </html>
