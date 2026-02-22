@@ -1,12 +1,12 @@
-(function() {
-    // 1. Ambil identitas group dari tag script
-    const scriptTag = document.getElementById('chat-widget');
-    const groupID = scriptTag ? scriptTag.getAttribute('data-group') : 'global';
-    const serverUrl = 'http://10.10.1.28:8000'; // Sesuaikan dengan domain kamu
+(function () {
+  // 1. Ambil identitas group dari tag script
+  const scriptTag = document.getElementById("chat-widget");
+  const groupID = scriptTag ? scriptTag.getAttribute("data-group") : "global";
+  const serverUrl = "https://chat.areza.my.id"; // Sesuaikan dengan domain kamu
 
-    // 2. Tambahkan CSS secara dinamis
-    const style = document.createElement('style');
-    style.innerHTML = `
+  // 2. Tambahkan CSS secara dinamis
+  const style = document.createElement("style");
+  style.innerHTML = `
         #chat-widget-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 999999; }
         #chat-window { 
             display: none; position: fixed; bottom: 85px; right: 20px; 
@@ -28,14 +28,14 @@
             #chat-widget-wrapper { bottom: 15px; right: 15px; }
         }
     `;
-    document.head.appendChild(style);
+  document.head.appendChild(style);
 
-    // 3. Buat Elemen HTML
-    const wrapper = document.createElement('div');
-    wrapper.id = 'chat-widget-wrapper';
-    
-    // Kita tambahkan parameter group ke URL iframe
-    wrapper.innerHTML = `
+  // 3. Buat Elemen HTML
+  const wrapper = document.createElement("div");
+  wrapper.id = "chat-widget-wrapper";
+
+  // Kita tambahkan parameter group ke URL iframe
+  wrapper.innerHTML = `
         <div id="chat-window">
             <iframe src="${serverUrl}?view=mobile&group=${groupID}" 
                     id="chat-iframe"
@@ -46,28 +46,31 @@
             <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
         </div>
     `;
-    document.body.appendChild(wrapper);
+  document.body.appendChild(wrapper);
 
-    // 4. Logika Buka/Tutup
-    const btn = document.getElementById('chat-fab-btn');
-    const win = document.getElementById('chat-window');
+  // 4. Logika Buka/Tutup
+  const btn = document.getElementById("chat-fab-btn");
+  const win = document.getElementById("chat-window");
 
-    btn.onclick = () => {
-        if (win.style.display === 'none' || win.style.display === '') {
-            win.style.display = 'block';
-            // Opsional: ganti icon jadi 'X' saat terbuka
-            btn.innerHTML = '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-        } else {
-            win.style.display = 'none';
-            btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>';
-        }
-    };
+  btn.onclick = () => {
+    if (win.style.display === "none" || win.style.display === "") {
+      win.style.display = "block";
+      // Opsional: ganti icon jadi 'X' saat terbuka
+      btn.innerHTML =
+        '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+    } else {
+      win.style.display = "none";
+      btn.innerHTML =
+        '<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>';
+    }
+  };
 
-    // 5. Mendengarkan perintah tutup dari dalam iframe (postMessage)
-    window.addEventListener('message', (event) => {
-        if (event.data === 'closeChat') {
-            win.style.display = 'none';
-            btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>';
-        }
-    });
+  // 5. Mendengarkan perintah tutup dari dalam iframe (postMessage)
+  window.addEventListener("message", (event) => {
+    if (event.data === "closeChat") {
+      win.style.display = "none";
+      btn.innerHTML =
+        '<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>';
+    }
+  });
 })();
