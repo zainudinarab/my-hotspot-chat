@@ -7,7 +7,7 @@
   // 2. Tambahkan CSS secara dinamis
   const style = document.createElement("style");
   style.innerHTML = `
-        #chat-widget-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 999999; }
+        #chat-widget-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
         #chat-window { 
             display: none; position: fixed; bottom: 85px; right: 20px; 
             width: 380px; height: 600px; border-radius: 16px; 
