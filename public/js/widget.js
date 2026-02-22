@@ -77,9 +77,11 @@
   //     }
   //   });
   window.addEventListener("message", (event) => {
+    if (event.origin !== serverUrl) return; // 🔒 keamanan tambahan
+
     if (event.data === "closeChat") {
       win.style.display = "none";
-      btn.style.display = "flex"; // 🔥 tampilkan FAB lagi
+      btn.style.display = "flex";
     }
   });
 })();
