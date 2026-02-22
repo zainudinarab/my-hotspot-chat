@@ -52,25 +52,34 @@
   const btn = document.getElementById("chat-fab-btn");
   const win = document.getElementById("chat-window");
 
+  //   btn.onclick = () => {
+  //     if (win.style.display === "none" || win.style.display === "") {
+  //       win.style.display = "block";
+  //       // Opsional: ganti icon jadi 'X' saat terbuka
+  //       btn.innerHTML =
+  //         '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+  //     } else {
+  //       win.style.display = "none";
+  //       btn.innerHTML =
+  //         '<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>';
+  //     }
+  //   };
   btn.onclick = () => {
-    if (win.style.display === "none" || win.style.display === "") {
-      win.style.display = "block";
-      // Opsional: ganti icon jadi 'X' saat terbuka
-      btn.innerHTML =
-        '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-    } else {
-      win.style.display = "none";
-      btn.innerHTML =
-        '<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>';
-    }
+    win.style.display = "block";
+    btn.style.display = "none"; // 🔥 sembunyikan FAB
   };
-
   // 5. Mendengarkan perintah tutup dari dalam iframe (postMessage)
+  //   window.addEventListener("message", (event) => {
+  //     if (event.data === "closeChat") {
+  //       win.style.display = "none";
+  //       btn.innerHTML =
+  //         '<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>';
+  //     }
+  //   });
   window.addEventListener("message", (event) => {
     if (event.data === "closeChat") {
       win.style.display = "none";
-      btn.innerHTML =
-        '<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>';
+      btn.style.display = "flex"; // 🔥 tampilkan FAB lagi
     }
   });
 })();
